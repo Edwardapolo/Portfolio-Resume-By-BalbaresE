@@ -89,6 +89,11 @@ document.addEventListener('DOMContentLoaded', function() {
             submitMessageStatic();
         });
     }
+    
+    // Initialize demo messages with a small delay to ensure DOM is ready
+    setTimeout(() => {
+        displayMessagesStatic(staticMessages);
+    }, 100);
 });
 
 // Static message storage (simulates database)
@@ -369,4 +374,13 @@ window.deleteMessage = deleteMessage;
 window.editMessage = editMessage;
 window.updateMessageStatic = updateMessageStatic;
 window.closeEditModal = closeEditModal;
-window.showNotification = showNotification; 
+window.showNotification = showNotification;
+
+// Debug logging to ensure functions are loaded
+console.log('Portfolio functions loaded:', {
+    deleteMessage: typeof deleteMessage,
+    editMessage: typeof editMessage,
+    updateMessageStatic: typeof updateMessageStatic,
+    closeEditModal: typeof closeEditModal,
+    showNotification: typeof showNotification
+}); 
