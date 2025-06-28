@@ -2,6 +2,26 @@
 let menuIcon = document.querySelector('#menu-icon');
 let navbar = document.querySelector('.navbar');
 
+// Static message storage (simulates database) - moved to top
+let staticMessages = [
+    {
+        Message_ID: 1,
+        Full_Name: 'John Doe',
+        Email: 'john@example.com',
+        Message_Content: 'Great portfolio! Love the design and functionality.',
+        Date_posted: '2025-01-15'
+    },
+    {
+        Message_ID: 2,
+        Full_Name: 'Jane Smith',
+        Email: 'jane@example.com',
+        Message_Content: 'Impressive work! The message board feature is really cool.',
+        Date_posted: '2025-01-14'
+    }
+];
+
+let nextMessageId = 3;
+
 if (menuIcon && navbar) {
     menuIcon.onclick = () => {
         menuIcon.classList.toggle('bx-x');
@@ -81,40 +101,27 @@ if (darkModeIcon) {
 
 /*========== Static Message Board Functionality ==========*/
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - Initializing portfolio...');
+    
     // Handle form submission for static demo
     const messageForm = document.getElementById('messageForm');
     if (messageForm) {
+        console.log('Message form found, adding event listener...');
         messageForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            console.log('Form submitted, calling submitMessageStatic...');
             submitMessageStatic();
         });
+    } else {
+        console.error('Message form not found!');
     }
     
     // Initialize demo messages with a small delay to ensure DOM is ready
     setTimeout(() => {
+        console.log('Initializing demo messages...', staticMessages);
         displayMessagesStatic(staticMessages);
     }, 100);
 });
-
-// Static message storage (simulates database)
-let staticMessages = [
-    {
-        Message_ID: 1,
-        Full_Name: 'John Doe',
-        Email: 'john@example.com',
-        Message_Content: 'Great portfolio! Love the design and functionality.',
-        Date_posted: '2025-01-15'
-    },
-    {
-        Message_ID: 2,
-        Full_Name: 'Jane Smith',
-        Email: 'jane@example.com',
-        Message_Content: 'Impressive work! The message board feature is really cool.',
-        Date_posted: '2025-01-14'
-    }
-];
-
-let nextMessageId = 3;
 
 function submitMessageStatic() {
     const form = document.getElementById('messageForm');
@@ -173,8 +180,14 @@ if (typeof ScrollReveal !== 'undefined') {
 
 // ========== Enhanced Message Board Animations ========== //
 function displayMessagesStatic(messages) {
+    console.log('displayMessagesStatic called with:', messages);
     const messagesContainer = document.getElementById('messagesContainer');
-    if (!messagesContainer) return;
+    if (!messagesContainer) {
+        console.error('Messages container not found!');
+        return;
+    }
+    
+    console.log('Messages container found, updating content...');
     
     if (messages.length === 0) {
         messagesContainer.innerHTML = '<div class="no-messages">No messages yet. Be the first to leave a message!</div>';
@@ -204,7 +217,9 @@ function displayMessagesStatic(messages) {
         `;
     });
     
+    console.log('Generated HTML:', html);
     messagesContainer.innerHTML = html;
+    
     // Animate in
     setTimeout(() => {
         document.querySelectorAll('.message-item.animate-in').forEach(el => {
@@ -214,6 +229,7 @@ function displayMessagesStatic(messages) {
 }
 
 function deleteMessage(messageId) {
+    console.log('deleteMessage called with ID:', messageId);
     if (confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
         // Remove from static storage
         staticMessages = staticMessages.filter(msg => msg.Message_ID !== messageId);
@@ -233,6 +249,7 @@ function deleteMessage(messageId) {
 }
 
 function editMessage(messageId, fullName, email, messageContent) {
+    console.log('editMessage called with ID:', messageId, 'Name:', fullName);
     // Create modal HTML
     const modalHTML = `
         <div class="edit-modal" id="editModal">
