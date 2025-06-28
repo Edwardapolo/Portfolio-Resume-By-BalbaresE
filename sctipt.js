@@ -2,7 +2,7 @@
 let menuIcon = document.querySelector('#menu-icon');
 let navbar = document.querySelector('.navbar');
 
-// Static message storage (simulates database) - moved to top
+// Static message storage (simulates database)
 let staticMessages = [
     {
         Message_ID: 1,
@@ -99,71 +99,7 @@ if (darkModeIcon) {
     };
 }
 
-/*========== Static Message Board Functionality ==========*/
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM Content Loaded - Initializing portfolio...');
-    
-    // Handle form submission for static demo
-    const messageForm = document.getElementById('messageForm');
-    if (messageForm) {
-        console.log('Message form found, adding event listener...');
-        messageForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            console.log('Form submitted, calling submitMessageStatic...');
-            submitMessageStatic();
-        });
-    } else {
-        console.error('Message form not found!');
-    }
-    
-    // Initialize demo messages with a small delay to ensure DOM is ready
-    setTimeout(() => {
-        console.log('Initializing demo messages...', staticMessages);
-        displayMessagesStatic(staticMessages);
-    }, 100);
-});
-
-function submitMessageStatic() {
-    const form = document.getElementById('messageForm');
-    const formData = new FormData(form);
-    
-    const fullName = formData.get('full_name');
-    const email = formData.get('email');
-    const messageContent = formData.get('message_content');
-    
-    // Validate inputs
-    if (!fullName || !email || !messageContent) {
-        showNotification('All fields are required', 'error');
-        return;
-    }
-    
-    if (!isValidEmail(email)) {
-        showNotification('Please enter a valid email address', 'error');
-        return;
-    }
-    
-    // Add new message to static storage
-    const newMessage = {
-        Message_ID: nextMessageId++,
-        Full_Name: fullName,
-        Email: email,
-        Message_Content: messageContent,
-        Date_posted: new Date().toISOString().split('T')[0]
-    };
-    
-    staticMessages.unshift(newMessage);
-    
-    // Update display
-    displayMessagesStatic(staticMessages);
-    
-    // Show success message
-    showNotification('Message sent successfully! (Demo mode)', 'success');
-    
-    // Reset form
-    form.reset();
-}
-
-// ========== ScrollReveal Animations ========== //
+/*========== ScrollReveal Animations ==========*/
 if (typeof ScrollReveal !== 'undefined') {
     const sr = ScrollReveal({
         distance: '60px',
@@ -178,16 +114,34 @@ if (typeof ScrollReveal !== 'undefined') {
     sr.reveal('.footer', { origin: 'bottom' });
 }
 
-// ========== Enhanced Message Board Animations ========== //
-function displayMessagesStatic(messages) {
-    console.log('displayMessagesStatic called with:', messages);
+/*========== Utility Functions ==========*/
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+}
+
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+/*========== Message Board Functions ==========*/
+function displayMessages(messages) {
     const messagesContainer = document.getElementById('messagesContainer');
     if (!messagesContainer) {
         console.error('Messages container not found!');
         return;
     }
-    
-    console.log('Messages container found, updating content...');
     
     if (messages.length === 0) {
         messagesContainer.innerHTML = '<div class="no-messages">No messages yet. Be the first to leave a message!</div>';
@@ -217,39 +171,38 @@ function displayMessagesStatic(messages) {
         `;
     });
     
-    console.log('Generated HTML:', html);
     messagesContainer.innerHTML = html;
     
-    // Animate in
+    // Remove animation class after animation completes
     setTimeout(() => {
         document.querySelectorAll('.message-item.animate-in').forEach(el => {
             el.classList.remove('animate-in');
         });
-    }, 10);
+    }, 400);
 }
 
 function deleteMessage(messageId) {
-    console.log('deleteMessage called with ID:', messageId);
     if (confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
         // Remove from static storage
         staticMessages = staticMessages.filter(msg => msg.Message_ID !== messageId);
+        
         // Animate out
         const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
         if (messageElement) {
             messageElement.classList.add('animate-out');
             setTimeout(() => {
-                displayMessagesStatic(staticMessages);
+                displayMessages(staticMessages);
             }, 350);
         } else {
-            displayMessagesStatic(staticMessages);
+            displayMessages(staticMessages);
         }
+        
         // Show success message
         showNotification('Message deleted successfully! (Demo mode)', 'success');
     }
 }
 
 function editMessage(messageId, fullName, email, messageContent) {
-    console.log('editMessage called with ID:', messageId, 'Name:', fullName);
     // Create modal HTML
     const modalHTML = `
         <div class="edit-modal" id="editModal">
@@ -282,16 +235,17 @@ function editMessage(messageId, fullName, email, messageContent) {
     // Add event listener to form
     document.getElementById('editMessageForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        updateMessageStatic();
+        updateMessage();
     });
     
     // Focus on first input
     setTimeout(() => {
-        document.querySelector('#editModal input[name="full_name"]').focus();
+        const firstInput = document.querySelector('#editModal input[name="full_name"]');
+        if (firstInput) firstInput.focus();
     }, 100);
 }
 
-function updateMessageStatic() {
+function updateMessage() {
     const form = document.getElementById('editMessageForm');
     const formData = new FormData(form);
     
@@ -322,7 +276,7 @@ function updateMessageStatic() {
         };
         
         // Update display
-        displayMessagesStatic(staticMessages);
+        displayMessages(staticMessages);
         
         // Show success message
         showNotification('Message updated successfully! (Demo mode)', 'success');
@@ -337,6 +291,46 @@ function closeEditModal() {
     if (modal) {
         modal.remove();
     }
+}
+
+function submitMessage() {
+    const form = document.getElementById('messageForm');
+    const formData = new FormData(form);
+    
+    const fullName = formData.get('full_name');
+    const email = formData.get('email');
+    const messageContent = formData.get('message_content');
+    
+    // Validate inputs
+    if (!fullName || !email || !messageContent) {
+        showNotification('All fields are required', 'error');
+        return;
+    }
+    
+    if (!isValidEmail(email)) {
+        showNotification('Please enter a valid email address', 'error');
+        return;
+    }
+    
+    // Add new message to static storage
+    const newMessage = {
+        Message_ID: nextMessageId++,
+        Full_Name: fullName,
+        Email: email,
+        Message_Content: messageContent,
+        Date_posted: new Date().toISOString().split('T')[0]
+    };
+    
+    staticMessages.unshift(newMessage);
+    
+    // Update display
+    displayMessages(staticMessages);
+    
+    // Show success message
+    showNotification('Message sent successfully! (Demo mode)', 'success');
+    
+    // Reset form
+    form.reset();
 }
 
 function showNotification(message, type) {
@@ -367,37 +361,29 @@ function showNotification(message, type) {
     }, 5000);
 }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+/*========== Initialize Everything ==========*/
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Portfolio initialized successfully!');
+    
+    // Handle form submission
+    const messageForm = document.getElementById('messageForm');
+    if (messageForm) {
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitMessage();
+        });
+    }
+    
+    // Initialize demo messages
+    setTimeout(() => {
+        displayMessages(staticMessages);
+    }, 100);
+});
 
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
-}
-
-function isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-}
-
+/*========== Make Functions Global ==========*/
 window.deleteMessage = deleteMessage;
 window.editMessage = editMessage;
-window.updateMessageStatic = updateMessageStatic;
+window.updateMessage = updateMessage;
 window.closeEditModal = closeEditModal;
 window.showNotification = showNotification;
-
-// Debug logging to ensure functions are loaded
-console.log('Portfolio functions loaded:', {
-    deleteMessage: typeof deleteMessage,
-    editMessage: typeof editMessage,
-    updateMessageStatic: typeof updateMessageStatic,
-    closeEditModal: typeof closeEditModal,
-    showNotification: typeof showNotification
-}); 
+window.submitMessage = submitMessage; 
