@@ -151,6 +151,22 @@ function submitMessageStatic() {
     form.reset();
 }
 
+// ========== ScrollReveal Animations ========== //
+if (typeof ScrollReveal !== 'undefined') {
+    const sr = ScrollReveal({
+        distance: '60px',
+        duration: 1200,
+        delay: 200,
+        reset: false
+    });
+    sr.reveal('.home-content, .home-img', { origin: 'top', interval: 200 });
+    sr.reveal('.about-img', { origin: 'left' });
+    sr.reveal('.about-content', { origin: 'right' });
+    sr.reveal('.services-container, .portfolio-container, .resume-container, .contact-container', { origin: 'bottom', interval: 200 });
+    sr.reveal('.footer', { origin: 'bottom' });
+}
+
+// ========== Enhanced Message Board Animations ========== //
 function displayMessagesStatic(messages) {
     const messagesContainer = document.getElementById('messagesContainer');
     if (!messagesContainer) return;
@@ -163,7 +179,7 @@ function displayMessagesStatic(messages) {
     let html = '';
     messages.forEach(message => {
         html += `
-            <div class="message-item" data-message-id="${message.Message_ID}">
+            <div class="message-item animate-in" data-message-id="${message.Message_ID}">
                 <div class="message-header">
                     <div class="message-info">
                         <span class="message-author">${escapeHtml(message.Full_Name)}</span>
@@ -184,16 +200,28 @@ function displayMessagesStatic(messages) {
     });
     
     messagesContainer.innerHTML = html;
+    // Animate in
+    setTimeout(() => {
+        document.querySelectorAll('.message-item.animate-in').forEach(el => {
+            el.classList.remove('animate-in');
+        });
+    }, 10);
 }
 
 function deleteMessage(messageId) {
     if (confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
         // Remove from static storage
         staticMessages = staticMessages.filter(msg => msg.Message_ID !== messageId);
-        
-        // Update display
-        displayMessagesStatic(staticMessages);
-        
+        // Animate out
+        const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+        if (messageElement) {
+            messageElement.classList.add('animate-out');
+            setTimeout(() => {
+                displayMessagesStatic(staticMessages);
+            }, 350);
+        } else {
+            displayMessagesStatic(staticMessages);
+        }
         // Show success message
         showNotification('Message deleted successfully! (Demo mode)', 'success');
     }
@@ -335,7 +363,10 @@ function formatDate(dateString) {
 function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-} 
+}
 
 window.deleteMessage = deleteMessage;
-window.editMessage = editMessage; 
+window.editMessage = editMessage;
+window.updateMessageStatic = updateMessageStatic;
+window.closeEditModal = closeEditModal;
+window.showNotification = showNotification; 
